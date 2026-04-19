@@ -1,9 +1,10 @@
-﻿@{
+@{
     ViewData["Title"] = "Bulk Data Engine";
     var s = ViewBag.Settings as BulkDataEngine.Models.ConverterSettings;
     var maxMB = s?.MaxFileSizeMB ?? 500;
     var maxExcelMB = s?.MaxExcelFileSizeMB ?? 50;
-    var connSummary = (string)(ViewBag.DefaultConnSummary ?? "Configured in appsettings");
+    var defaultConnName = (string)(ViewBag.DefaultConnectionName);
+    var connections = ViewBag.Connections as Dictionary<string, string>;
 }
 
 <div class="app-wrapper">
@@ -43,33 +44,35 @@
                 <h2>Database Connection</h2>
                 <span class="panel-sub">SQL Server</span>
             </div>
-            <div class="conn-options">
-                <label class="radio-option">
-                    <input type="radio" name="connMode" id="connDefault" value="default" checked />
-                    <span class="radio-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12" /></svg></span>
-                    <span class="radio-label">
-                        <strong>Default (appsettings)</strong>
-                        <small>@connSummary</small>
-                    </span>
-                </label>
-                <label class="radio-option">
-                    <input type="radio" name="connMode" id="connCustom" value="custom" />
-                    <span class="radio-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12" /></svg></span>
-                    <span class="radio-label">
-                        <strong>Custom connection string</strong>
-                        <small>Override for this session</small>
-                    </span>
-                </label>
+            <div class="field-group">
+                <label class="field-label">Select Environment</label>
+                <select id="connEnvSelect" class="styled-select" style="margin-bottom: 12px; font-weight: 600;">
+                    @if (connections != null)
+                    {
+                        foreach (var kvp in connections)
+                        {
+                            if (kvp.Key == defaultConnName)
+                            {
+                                <option value="@kvp.Value" selected>@kvp.Key (Default)</option>
+                            }
+                            else
+                            {
+                                <option value="@kvp.Value">@kvp.Key</option>
+                            }
+                        }
+                    }
+                    <option value="custom">Custom Connection...</option>
+                </select>
             </div>
-            <div id="customConnWrap" class="hidden">
-                <input type="text" id="customConnStr"
-                       class="styled-input conn-input"
-                       placeholder="data source=...;database=...;user id=...;password=...;TrustServerCertificate=True;" />
-                <p class="field-hint">Provide a full ADO.NET SQL Server connection string. Leave empty to use default.</p>
+            <div id="customConnWrap">
+                <label class="field-label" id="connLabel">Connection String Value</label>
+                <input type="text" id="customConnStr" class="styled-input conn-input"
+                       placeholder="Enter connection string manually..." readonly />
+                <p class="field-hint" id="connHint">Value fetched from appsettings. Select "Custom" to override manually.</p>
             </div>
         </div>
 
-        <!-- â•â• TABS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- -->
         <div class="tab-nav">
             <button class="tab-btn active" data-tab="convert">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -89,7 +92,7 @@
             </button>
         </div>
 
-        <!-- â•â• TAB: CONVERT TXT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- â•â• TAB: CONVERT TXT  -->
         <div id="tab-convert" class="tab-pane active">
             <div class="converter-grid">
 
@@ -110,9 +113,9 @@
                                 <option value="~">~ Tilde (default)</option>
                                 <option value="|">| Pipe</option>
                                 <option value=";">; Semicolon</option>
-                                <option value=",">Comma</option>
-                                <option value="tab">â†’ Tab</option>
-                                <option value="custom">Customâ€¦</option>
+                                <option value=",">, Comma</option>
+                                <option value="tab">-> Tab</option>
+                                <option value="custom">Custom</option>
                             </select>
                             <input type="text" id="customDelimiter" class="styled-input custom-delim-input hidden"
                                    placeholder="Enter delimiter" maxlength="5" />
@@ -149,7 +152,7 @@
                             <label class="radio-option">
                                 <input type="radio" name="hasHeader" id="hasHeaderNo" value="false" checked />
                                 <span class="radio-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12" /></svg></span>
-                                <span class="radio-label"><strong>No header</strong><small>Columns: Column1, Column2â€¦</small></span>
+                                <span class="radio-label"><strong>No header</strong><small>Columns: Column1, Column2</small></span>
                             </label>
                             <label class="radio-option">
                                 <input type="radio" name="hasHeader" id="hasHeaderYes" value="true" />
@@ -283,7 +286,7 @@
             <div id="convDbPanel" class="panel db-panel hidden"></div>
         </div>
 
-        <!-- â•â• TAB: IMPORT CSV/EXCEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- â•â• TAB: IMPORT CSV/EXCEL -->
         <div id="tab-import" class="tab-pane hidden">
             <div class="converter-grid">
 
@@ -305,8 +308,8 @@
                                 <option value="~">~ Tilde</option>
                                 <option value="|">| Pipe</option>
                                 <option value=";">; Semicolon</option>
-                                <option value="tab">â†’ Tab</option>
-                                <option value="custom">Customâ€¦</option>
+                                <option value="tab">-> Tab</option>
+                                <option value="custom">Custom</option>
                             </select>
                             <input type="text" id="impCustomDelimiter" class="styled-input custom-delim-input hidden"
                                    placeholder="Enter delimiter" maxlength="5" />

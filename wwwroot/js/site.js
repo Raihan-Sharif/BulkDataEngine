@@ -28,9 +28,18 @@
   }
 
   function getCustomConnStr() {
-    return document.getElementById('connCustom').checked
-      ? (document.getElementById('customConnStr').value || '').trim()
-      : '';
+    const sel = document.getElementById('connEnvSelect');
+    if (sel && sel.value === 'custom') {
+      return (document.getElementById('customConnStr').value || '').trim();
+    }
+    return ''; // The backend will use default mapping if this is empty, but we can also pass the selected value if needed. Actually it's probably better to always pass the value from the input or select. Let's return the string directly. Wait, the backend uses default if customConnStr is empty. Since we have multiple defaults, the backend currently takes _defaultConnectionString which uses "DefaultConnection". 
+    // We should just pass the selected connection string directly to the backend!
+  }
+  
+  function getSelectedConnStr() {
+    const sel = document.getElementById('connEnvSelect');
+    if (!sel) return '';
+    return sel.value === 'custom' ? document.getElementById('customConnStr').value.trim() : sel.value;
   }
 
   // ── Drop-zone wiring ───────────────────────────────────────────
@@ -91,13 +100,36 @@
     });
   });
 
-  // ── Connection mode toggle ──────────────────────────────────────
-  document.querySelectorAll('input[name="connMode"]').forEach(r => {
-    r.addEventListener('change', () => {
-      document.getElementById('customConnWrap').classList.toggle(
-        'hidden', !document.getElementById('connCustom').checked);
+  // ── Connection mode dropdown logic ──────────────────────────────
+  const connEnvSelect = document.getElementById('connEnvSelect');
+  const customConnStr = document.getElementById('customConnStr');
+  const connHint = document.getElementById('connHint');
+
+  if (connEnvSelect && customConnStr) {
+    // Initial setup
+    const initialVal = connEnvSelect.value;
+    if (initialVal !== 'custom') {
+      customConnStr.value = initialVal;
+      customConnStr.readOnly = true;
+      customConnStr.classList.add('readonly-input');
+    }
+
+    connEnvSelect.addEventListener('change', () => {
+      const val = connEnvSelect.value;
+      if (val === 'custom') {
+        customConnStr.value = '';
+        customConnStr.readOnly = false;
+        customConnStr.classList.remove('readonly-input');
+        customConnStr.focus();
+        if (connHint) connHint.textContent = "Enter your full ADO.NET SQL Server connection string.";
+      } else {
+        customConnStr.value = val;
+        customConnStr.readOnly = true;
+        customConnStr.classList.add('readonly-input');
+        if (connHint) connHint.textContent = "Value fetched from appsettings. Select 'Custom' to override manually.";
+      }
     });
-  });
+  }
 
   // ════════════════════════════════════════════════════════════════
   //  CONVERT TXT TAB
@@ -555,7 +587,7 @@
       const fd = new FormData();
       fd.append('jobId',     jobId);
       fd.append('tableName', tableName);
-      const cc = getCustomConnStr();
+      const cc = getSelectedConnStr();
       if (cc) fd.append('customConnStr', cc);
 
       try {
@@ -624,22 +656,45 @@
           progWrap.classList.add('hidden');
           resultArea.innerHTML = makeErrorCard('Insert was cancelled.');
           break;
+        case 'notfound':
+          finished = true;
+          insertBtn.disabled = false;
+          progWrap.classList.add('hidden');
+          resultArea.innerHTML = makeErrorCard('Job lost or expired on the server. Please check the DB manually.');
+          break;
       }
     }
 
     // Poll HTTP fallback — checks job state once and handles terminal states
     function poll() {
       fetch(`/Home/DbJobStatus?jobId=${encodeURIComponent(jobId)}`)
-        .then(r => r.json())
+        .then(async r => {
+            if (!r.ok) {
+               if (r.status === 404) {
+                  finished = true;
+                  es.close();
+                  handleEvent({ status: 'notfound' });
+               }
+               throw new Error('Not OK');
+            }
+            return r.json();
+        })
         .then(data => {
-          if (['completed', 'failed', 'cancelled'].includes(data.status)) {
+          if (['completed', 'failed', 'cancelled', 'notfound'].includes(data.status)) {
             finished = true;
             es.close();
             handleEvent(data);
+          } else if (!finished) {
+            // Still processing! Schedule another poll just in case SSE is completely dead
+            errTimer = setTimeout(() => { errTimer = null; poll(); }, 5000);
           }
-          // If still processing, EventSource will auto-reconnect and resume
         })
-        .catch(() => { /* ignore network errors during poll */ });
+        .catch(() => {
+          // If network error, try polling again
+          if (!finished) {
+              errTimer = setTimeout(() => { errTimer = null; poll(); }, 8000);
+          }
+        });
     }
 
     const es = new EventSource(`/Home/DbProgress?jobId=${encodeURIComponent(jobId)}`);

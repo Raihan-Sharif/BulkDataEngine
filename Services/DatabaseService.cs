@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Text.RegularExpressions;
 using BulkDataEngine.Models;
@@ -13,7 +13,10 @@ namespace BulkDataEngine.Services
 
         public DatabaseService(IConfiguration config, DatabaseSettings dbSettings, ILogger<DatabaseService> logger)
         {
-            _defaultConnectionString = config.GetConnectionString("SqlServer") ?? string.Empty;
+            var defaultConnName = config.GetValue<string>("DefaultConnection");
+            _defaultConnectionString = !string.IsNullOrEmpty(defaultConnName) 
+                ? config.GetConnectionString(defaultConnName) ?? string.Empty
+                : string.Empty;
             _dbSettings = dbSettings;
             _logger = logger;
         }

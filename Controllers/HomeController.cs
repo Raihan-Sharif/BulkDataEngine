@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -49,7 +49,10 @@ namespace BulkDataEngine.Controllers
         public IActionResult Index()
         {
             ViewBag.Settings = _settings;
-            ViewBag.DefaultConnSummary = BuildConnSummary();
+            var connStrings = _config.GetSection("ConnectionStrings").GetChildren()
+                .ToDictionary(x => x.Key, x => x.Value);
+            ViewBag.Connections = connStrings;
+            ViewBag.DefaultConnectionName = _config.GetValue<string>("DefaultConnection") ?? connStrings.Keys.FirstOrDefault();
             return View();
         }
 
@@ -419,14 +422,6 @@ namespace BulkDataEngine.Controllers
             _            => raw
         };
 
-        private string BuildConnSummary()
-        {
-            var raw = _config.GetConnectionString("SqlServer") ?? "";
-            var ds = System.Text.RegularExpressions.Regex.Match(raw,
-                @"data source=([^;]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Groups[1].Value;
-            var db = System.Text.RegularExpressions.Regex.Match(raw,
-                @"database=([^;]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Groups[1].Value;
-            return string.IsNullOrEmpty(ds) ? "Configured in appsettings" : $"{ds} / {db}";
-        }
+
     }
 }
