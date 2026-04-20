@@ -5,6 +5,40 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 :root {
+  /* Common */
+  --radius-sm:         8px;
+  --radius-md:         12px;
+  --radius-lg:         20px;
+  --radius-xl:         28px;
+  --font:              'Inter', system-ui, sans-serif;
+  --transition:        0.2s ease;
+  
+  /* Default: Light Theme */
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-mid:   #f1f5f9;
+  --bg-gradient-end:   #e2e8f0;
+  --glass-bg:          rgba(255,255,255,0.7);
+  --glass-border:      rgba(255,255,255,0.8);
+  --glass-bg-hover:    rgba(255,255,255,0.9);
+  --accent:            #4f46e5;
+  --accent-light:      #6366f1;
+  --accent-glow:       rgba(79,70,229,0.2);
+  --success:           #059669;
+  --success-glow:      rgba(5,150,105,0.2);
+  --danger:            #dc2626;
+  --danger-glow:       rgba(220,38,38,0.2);
+  --warning:           #d97706;
+  --text-primary:      #0f172a;
+  --text-secondary:    #334155;
+  --text-muted:        #64748b;
+  --shadow-glass:      0 8px 32px rgba(0,0,0,0.05), 0 1px 0 rgba(255,255,255,0.5) inset;
+  --input-bg:          rgba(255,255,255,0.9);
+  --option-bg:         #ffffff;
+  --thead-bg:          rgba(241,245,249,0.95);
+  --tr-border:         rgba(0,0,0,0.04);
+}
+
+:root[data-theme='dark'] {
   --bg-gradient-start: #0b1120;
   --bg-gradient-mid:   #0f1f3d;
   --bg-gradient-end:   #1a0a2e;
@@ -22,13 +56,11 @@
   --text-primary:      #f1f5f9;
   --text-secondary:    #94a3b8;
   --text-muted:        #64748b;
-  --radius-sm:         8px;
-  --radius-md:         12px;
-  --radius-lg:         20px;
-  --radius-xl:         28px;
   --shadow-glass:      0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.07) inset;
-  --font:              'Inter', system-ui, sans-serif;
-  --transition:        0.2s ease;
+  --input-bg:          rgba(255,255,255,0.06);
+  --option-bg:         #1e2a3a;
+  --thead-bg:          rgba(30,58,95,0.95);
+  --tr-border:         rgba(255,255,255,0.04);
 }
 
 html, body {
@@ -147,7 +179,7 @@ body::after {
 .delimiter-row { display: flex; gap: 8px; }
 
 .styled-select, .styled-input {
-  background: rgba(255,255,255,0.06);
+  background: var(--input-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
@@ -170,7 +202,7 @@ body::after {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
 }
-.styled-select option { background: #1e2a3a; color: var(--text-primary); }
+.styled-select option { background: var(--option-bg); color: var(--text-primary); }
 .custom-delim-input { width: 120px; flex-shrink: 0; font-family: monospace; }
 .hidden { display: none !important; }
 
@@ -521,7 +553,7 @@ body::after {
 }
 .preview-table thead th {
   position: sticky; top: 0; z-index: 2;
-  background: rgba(30,58,95,0.95);
+  background: var(--thead-bg);
   backdrop-filter: blur(8px);
   color: #fff;
   font-weight: 600;
@@ -532,8 +564,9 @@ body::after {
   letter-spacing: 0.03em;
 }
 .preview-table thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
-.preview-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
-.preview-table tbody tr:hover { background: rgba(255,255,255,0.04); }
+.preview-table tbody tr { border-bottom: 1px solid var(--tr-border); }
+.preview-table tbody tr:hover { background: rgba(0,0,0,0.04); }
+[data-theme='dark'] .preview-table tbody tr:hover { background: rgba(255,255,255,0.04); }
 .preview-table tbody td {
   padding: 8px 14px;
   color: var(--text-secondary);
@@ -581,6 +614,32 @@ body::after {
   padding: 20px;
   color: var(--text-muted);
   font-size: 0.72rem;
+}
+/* ── Theme Toggle ─────────────────────────────────────────────── */
+.theme-toggle {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%; /* Perfect circle */
+  color: var(--text-primary);
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  transition: all var(--transition);
+}
+
+.theme-toggle:hover {
+  background: var(--glass-bg-hover);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.theme-toggle svg { 
+  width: 16px; 
+  height: 16px; 
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */

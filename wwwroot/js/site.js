@@ -4,6 +4,35 @@
 (function () {
   'use strict';
 
+  // ── Theme Toggling ───────────────────────────────────────────────
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  if (themeToggleBtn) {
+    const iconSun = themeToggleBtn.querySelector('.icon-sun');
+    const iconMoon = themeToggleBtn.querySelector('.icon-moon');
+    
+    function applyThemeIcons(theme) {
+      if (theme === 'dark') {
+        iconSun.style.display = 'block';   // Show Sun in Dark Mode (to indicate "switch to light")
+        iconMoon.style.display = 'none';
+      } else {
+        iconSun.style.display = 'none';
+        iconMoon.style.display = 'block';  // Show Moon in Light Mode (to indicate "switch to dark")
+      }
+    }
+    
+    // Initial icon state
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    applyThemeIcons(currentTheme);
+    
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      applyThemeIcons(newTheme);
+    });
+  }
+
   // ── Utilities ──────────────────────────────────────────────────
   function fmtBytes(bytes) {
     if (!bytes || bytes === 0) return '0 B';

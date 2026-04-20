@@ -25,10 +25,30 @@
                     <p class="brand-sub">Convert TXT &nbsp;&bull;&nbsp; Import CSV / Excel &nbsp;&bull;&nbsp; Bulk Insert to SQL Server</p>
                 </div>
             </div>
-            <div class="header-badges">
-                <span class="badge-pill">Up to @maxMB MB</span>
-                <span class="badge-pill">Text-Safe Numerics</span>
-                <span class="badge-pill">SqlBulkCopy</span>
+            <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+                <div class="header-badges">
+                    <span class="badge-pill">Up to @maxMB MB</span>
+                    <span class="badge-pill">Text-Safe Numerics</span>
+                    <span class="badge-pill">SqlBulkCopy</span>
+                </div>
+                <button type="button" id="themeToggleBtn" class="theme-toggle" aria-label="Toggle Theme" title="Toggle Theme">
+                    <!-- Modern Sun -->
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4" />
+                        <path d="M12 2v2" />
+                        <path d="M12 20v2" />
+                        <path d="M4.93 4.93l1.41 1.41" />
+                        <path d="M17.66 17.66l1.41 1.41" />
+                        <path d="M2 12h2" />
+                        <path d="M20 12h2" />
+                        <path d="M6.34 17.66l-1.41 1.41" />
+                        <path d="M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                    <!-- Modern Moon -->
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                        <path d="M12 3a6.364 6.364 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
