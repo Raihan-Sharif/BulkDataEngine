@@ -1,4 +1,4 @@
-﻿using BulkDataEngine.Models;
+using BulkDataEngine.Models;
 using BulkDataEngine.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +30,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Limits.MaxRequestBodySize = maxBytes;
+});
+builder.Services.Configure<IISServerOptions>(options =>
+{
+    options.MaxRequestBodySize = maxBytes;
 });
 
 var app = builder.Build();
