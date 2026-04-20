@@ -34,3 +34,6 @@ temp/
 
 # Log files
 *.log
+
+# Appsettings file
+appsettings.json
